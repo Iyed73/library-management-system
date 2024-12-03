@@ -60,6 +60,9 @@ class Book(models.Model):
 
     display_genre.short_description = "Genre"
 
+    class Meta:
+        ordering = ["title"]
+
 
 class BookInstance(models.Model):
     id = models.UUIDField(primary_key=True,
