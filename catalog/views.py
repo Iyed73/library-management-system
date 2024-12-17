@@ -1,4 +1,6 @@
 import datetime
+import os
+
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
@@ -42,7 +44,7 @@ class BookListView(generic.ListView):
     # def get_queryset(self):
     #     return Book.objects.all()[:5]
 
-    def get_context_date(self, **kwargs):
+    def get_context_data(self, **kwargs):
         context = super(BookListView, self).get_context_data(**kwargs)
         context["some_additional_data"] = "This is some additional data!"
         return context
@@ -86,6 +88,9 @@ class RenewBookLibrarianFormView(PermissionRequiredMixin, FormView):
     form_class = RenewBookModelForm
     success_url = reverse_lazy("all-borrowed")
     permission_required = "catalog.can_mark_returned"
+
+    def get_initial(self):
+        return {"due_back": datetime.date.today() + datetime.timedelta(weeks=3)}
 
     def form_valid(self, form):
         book_instance = get_object_or_404(BookInstance, pk=self.kwargs["pk"])

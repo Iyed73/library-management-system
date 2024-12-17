@@ -8,6 +8,7 @@ from catalog.models import BookInstance
 
 
 class RenewBookForm(forms.Form):
+    """Form for a librarian to renew books."""
     renewal_date = forms.DateField(help_text="Enter a date between now and 4 weeks (default 3 weeks).",
                                    initial=date.today() + timedelta(weeks=3))
 
@@ -37,4 +38,4 @@ class RenewBookModelForm(ModelForm):
         model = BookInstance
         fields = ["due_back"]
         labels = {"due_back": _("New renewal date")}
-        help_text = {"due_back": _("Enter a date between now and 4 weeks (default 3 weeks).")}
+        help_texts = {"due_back": _("Enter a date between now and 4 weeks (default 3 weeks).")}
