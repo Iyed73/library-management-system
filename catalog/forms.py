@@ -1,16 +1,20 @@
+from datetime import date, timedelta
+
 from django import forms
-from datetime import timedelta, date
 from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
 from django.forms import ModelForm
+from django.utils.translation import gettext_lazy as _
 
 from catalog.models import BookInstance
 
 
 class RenewBookForm(forms.Form):
     """Form for a librarian to renew books."""
-    renewal_date = forms.DateField(help_text="Enter a date between now and 4 weeks (default 3 weeks).",
-                                   initial=date.today() + timedelta(weeks=3))
+
+    renewal_date = forms.DateField(
+        help_text="Enter a date between now and 4 weeks (default 3 weeks).",
+        initial=date.today() + timedelta(weeks=3),
+    )
 
     def clean_renewal_date(self):
         data = self.cleaned_data["renewal_date"]
@@ -38,4 +42,6 @@ class RenewBookModelForm(ModelForm):
         model = BookInstance
         fields = ["due_back"]
         labels = {"due_back": _("New renewal date")}
-        help_texts = {"due_back": _("Enter a date between now and 4 weeks (default 3 weeks).")}
+        help_texts = {
+            "due_back": _("Enter a date between now and 4 weeks (default 3 weeks).")
+        }

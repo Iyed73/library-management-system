@@ -2,17 +2,18 @@ import datetime
 import os
 
 from django.contrib.auth.decorators import login_required, permission_required
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
-from catalog.forms import RenewBookModelForm
-from .models import Book, Author, BookInstance, Genre
-from django.views import generic
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse, reverse_lazy
-from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
+from django.views import generic
+from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
+
+from catalog.forms import RenewBookModelForm
+
+from .models import Author, Book, BookInstance, Genre
 
 
-# Create your views here.
 class IndexView(generic.View):
     template_name = "index.html"
 
@@ -22,7 +23,7 @@ class IndexView(generic.View):
         num_instances_available = BookInstance.objects.filter(status__exact="a").count()
         num_authors = Author.objects.count()
 
-        num_visits =  request.session.get("num_visits", 0) + 1
+        num_visits = request.session.get("num_visits", 0) + 1
         request.session["num_visits"] = num_visits
 
         context = {
@@ -75,6 +76,7 @@ class LoanedBooksByUserListView(LoginRequiredMixin, generic.ListView):
             .filter(status__exact="o")
             .order_by("due_back")
         )
+
 
 class AllBorrowedBooksListView(PermissionRequiredMixin, generic.ListView):
     model = BookInstance
