@@ -58,6 +58,9 @@ class Book(models.Model):
 
     class Meta:
         ordering = ["title"]
+        indexes = [
+            models.Index(fields=["title"])
+        ]
 
 
 class BookInstance(models.Model):
@@ -109,6 +112,10 @@ class Author(models.Model):
 
     class Meta:
         ordering = ["last_name", "first_name"]
+        indexes = [
+            models.Index(fields=["first_name"]),
+            models.Index(fields=["last_name"]),
+        ]
 
     def get_absolute_url(self):
         return reverse("author-detail", args=[str(self.id)])
