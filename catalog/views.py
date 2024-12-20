@@ -1,18 +1,20 @@
 import datetime
-import os
 
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import (LoginRequiredMixin,
+                                        PermissionRequiredMixin)
+from django.core.cache import cache
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse, reverse_lazy
 from django.views import generic
-from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
+from django.views.generic.edit import (CreateView, DeleteView, FormView,
+                                       UpdateView)
+
+from django.db.models import Count, Q
 
 from catalog.forms import RenewBookModelForm
 
 from .models import Author, Book, BookInstance, Genre
-
-from django.core.cache import cache
 
 
 class IndexView(generic.View):
@@ -62,10 +64,9 @@ class BookDetailView(generic.DetailView):
         book = cache.get(cache_key)
         if not book:
             book = super().get_object(queryset)
-            cache.set(cache_key, book, 60*60)
+            cache.set(cache_key, book, 60 * 60)
 
         return book
-
 
 
 class AuthorListView(generic.ListView):
@@ -76,6 +77,15 @@ class AuthorListView(generic.ListView):
 
 class AuthorDetailView(generic.DetailView):
     model = Author
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['genres'] = Genre.objects.filter(
+            book__author=self.object
+        ).annotate(
+            book_count=Count('book', filter=Q(book__author=self.object))
+        ).distinct()
+        return context
 
 
 class LoanedBooksByUserListView(LoginRequiredMixin, generic.ListView):
