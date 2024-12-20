@@ -1,4 +1,5 @@
 <!doctype html>
+{% load cache %}
 <html lang="en">
     <head>
         {% block title %}
@@ -18,40 +19,42 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-2">
-                    {% block sidebar %}
-                        <ul class="sidebar-nav">
-                            <li><a href="{% url 'index' %}">Home</a></li>
-                            <li><a href="{% url 'books' %}">All books</a></li>
-                            <li><a href="{% url 'authors' %}">All authors</a></li>
-                        </ul>
-                        <ul class="sidebar-nav">
-                            {% if user.is_authenticated %}
-                                <li>User: {{ user.get_username }}</li>
-
-                                <li><a href="{% url 'my-borrowed' %}">My Borrowed</a></li>
-
-                                <li>
-                                    <form id="logout-form" method="post" action="{% url 'logout' %}">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-link">Logout</button>
-                                    </form>
-                                </li>
-                            {% else %}
-                                <li><a href="{% url 'login' %}?next={{ request.path }}">Login</a></li>
-                            {% endif %}
-                        </ul>
-                        {% load catalog_extras %}
-                        {% if request.user|has_group:"Librarians" %}
-                            <hr>
+                    {% cache 3600 sidebar user.is_authenticated %}
+                        {% block sidebar %}
                             <ul class="sidebar-nav">
-                                <li>Staff</li>
-                                <li><a href="{% url 'all-borrowed' %}">All borrowed</a></li>
-                                {% if perms.catalog.add_author %}
-                                <li><a href="{% url 'author-create' %}">Create author</a></li>
+                                <li><a href="{% url 'index' %}">Home</a></li>
+                                <li><a href="{% url 'books' %}">All books</a></li>
+                                <li><a href="{% url 'authors' %}">All authors</a></li>
+                            </ul>
+                            <ul class="sidebar-nav">
+                                {% if user.is_authenticated %}
+                                    <li>User: {{ user.get_username }}</li>
+
+                                    <li><a href="{% url 'my-borrowed' %}">My Borrowed</a></li>
+
+                                    <li>
+                                        <form id="logout-form" method="post" action="{% url 'logout' %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-link">Logout</button>
+                                        </form>
+                                    </li>
+                                {% else %}
+                                    <li><a href="{% url 'login' %}?next={{ request.path }}">Login</a></li>
                                 {% endif %}
                             </ul>
-                        {% endif %}
-                    {% endblock %}
+                            {% load catalog_extras %}
+                            {% if request.user|has_group:"Librarians" %}
+                                <hr>
+                                <ul class="sidebar-nav">
+                                    <li>Staff</li>
+                                    <li><a href="{% url 'all-borrowed' %}">All borrowed</a></li>
+                                    {% if perms.catalog.add_author %}
+                                        <li><a href="{% url 'author-create' %}">Create author</a></li>
+                                    {% endif %}
+                                </ul>
+                            {% endif %}
+                        {% endblock %}
+                    {% endcache %}
                 </div>
                 <div class="col-sm-10 ">
                     {% block content %}{% endblock %}
