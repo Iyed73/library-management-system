@@ -1,5 +1,6 @@
 import datetime
 import uuid
+from unittest import mock
 
 from django.contrib.auth.models import Permission, User
 from django.test import TestCase
@@ -298,3 +299,30 @@ class RenewBookInstancesViewTest(TestCase):
             "due_back",
             "Invalid date - renewal more than 4 weeks ahead",
         )
+
+
+class BookDetailViewTest(TestCase):
+    def setUp(self):
+        test_author = Author.objects.create(first_name="John", last_name="Smith")
+        test_genre = Genre.objects.create(name="Fantasy")
+        test_language = Language.objects.create(name="English")
+        self.book = Book.objects.create(title="Book Title",
+            summary="My book summary",
+            isbn="ABCDEFG",
+            author=test_author,
+            language=test_language,
+                                        )
+
+    @mock.patch('django.core.cache.cache.get')
+    @mock.patch('django.core.cache.cache.set')
+    def test_cache_is_used(self, mock_cache_set, mock_cache_get):
+        cache_key = f"book_{self.book.pk}"
+        mock_cache_get.return_value = None
+        response = self.client.get(reverse('book-detail', kwargs={'pk': self.book.pk}))
+        mock_cache_get.assert_called_once_with(cache_key)
+        mock_cache_set.assert_called_once_with(cache_key, self.book, 60 * 60)
+        self.assertEqual(response.status_code, 200)
+        mock_cache_get.return_value = self.book
+        response = self.client.get(reverse('book-detail', kwargs={'pk': self.book.pk}))
+        mock_cache_get.assert_called_with(cache_key)
+        self.assertEqual(mock_cache_set.call_count, 1)

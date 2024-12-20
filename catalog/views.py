@@ -12,6 +12,8 @@ from catalog.forms import RenewBookModelForm
 
 from .models import Author, Book, BookInstance, Genre
 
+from django.core.cache import cache
+
 
 class IndexView(generic.View):
     template_name = "index.html"
@@ -52,6 +54,18 @@ class BookListView(generic.ListView):
 
 class BookDetailView(generic.DetailView):
     model = Book
+
+    def get_object(self, queryset=None):
+        pk = self.kwargs["pk"]
+        cache_key = f"book_{pk}"
+
+        book = cache.get(cache_key)
+        if not book:
+            book = super().get_object(queryset)
+            cache.set(cache_key, book, 60*60)
+
+        return book
+
 
 
 class AuthorListView(generic.ListView):
