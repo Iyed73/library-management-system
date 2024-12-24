@@ -6,6 +6,7 @@ class AdminAccessMiddleware:
     """
     Middleware to restrict access to the admin login page
     """
+
     def __init__(self, get_response):
         self.get_response = get_response
 
