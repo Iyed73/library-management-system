@@ -2,12 +2,15 @@ import datetime
 import uuid
 from unittest import mock
 
-from django.contrib.auth.models import Permission, User
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
 from catalog.models import Author, Book, BookInstance, Genre, Language
+
+User = get_user_model()
 
 
 class AuthorListViewTest(TestCase):
